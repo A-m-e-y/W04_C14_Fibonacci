@@ -70,7 +70,7 @@ All times measured using `cudaEvent_t` for GPU and `clock_gettime()` for CPU.
 
 ---
 
-## 📈 Visualization
+## 📈 Visualization 1:
 
 <img src="plots/fibonacci_gpu_vs_cpu_bar.png" width="800">
 
@@ -90,11 +90,100 @@ All times measured using `cudaEvent_t` for GPU and `clock_gettime()` for CPU.
 
 ---
 
+## 📈 Visualization 2:
+
+<img src="plots/fibonacci_series_kernel_vs_cpu_total.png" width="800">
+
+---
+
+## Key Conclusion
+
+> **GPU kernel is significantly faster than CPU compute time at every scale.**
+> But **GPU total time is never faster than CPU**, even at very large N.
+
+---
+
+### Crossover **does not** occur
+
+\| N = 2^28 (268M) | GPU Kernel = **1405 ms** | CPU = **3366 ms** | GPU Total = **4130 ms** |
+
+Even at this massive scale:
+
+* GPU kernel is **2.4× faster** than CPU loop.
+* But GPU total time is **\~23% slower** than CPU.
+
+> ***Why?*** Overhead from `cudaMalloc`, `cudaMemcpy`, and `cudaFree` never amortizes enough to make up for it.
+
+---
+
+## 🔍 Component-Level Observations
+
+### 🔹 1. **GPU Kernel is Consistently Excellent**
+
+* Grows roughly linearly with N
+* Nearly **2× faster** than CPU at every size
+* Example:
+
+  * N = 2^25
+
+    * GPU kernel = **173 ms**
+    * CPU = **372 ms**
+      → GPU kernel wins hands-down
+
+---
+
+### 🔹 2. **GPU Total Time is Dragged Down by Overhead**
+
+Even though the GPU kernel is fast, the **total time is nearly double CPU time** at most sizes.
+
+| N    | Overhead (Total - Kernel)    | Overhead Share (%)        |
+| ---- | ---------------------------- | ------------------------- |
+| 2^25 | 388.3 - 172.9 = **215.4 ms** | **55%** of total GPU time |
+| 2^28 | 4130 - 1405 = **2725 ms**    | **66%** of total GPU time |
+
+> ❗ **Memory allocation and transfers dominate** total time as size increases.
+
+---
+
+### 🔹 3. **CPU Scales Linearly and Efficiently**
+
+* CPU time is predictable and smooth
+* At 2^28: **3366 ms** without any GPU setup overhead
+
+---
+
+### 🔹 4. **No Break-Even Point**
+
+* GPU **never beats CPU** in total time
+* Not even at 268M Fibonacci numbers
+
+---
+
+## 🧪 Final Analysis
+
+### ✅ GPU is good for:
+
+* **Pure compute** tasks (e.g., kernel-only performance)
+* Situations where overhead can be hidden via **concurrent streams** or **reused memory**
+
+### ❌ GPU is bad for:
+
+* **Sequential problems** (like Fibonacci)
+* Workloads where **you copy data for every kernel**
+* Small-to-medium size N (because overhead dominates)
+
+---
+
+
 ## 🗂 Files
 
 * `fibonacci_gpu_vs_cpu.cu`: Benchmark source code
+* `fibonacci_series_benchmark.cu`: Benchmark source code for series
 * `fibonacci_timing.csv`: Output metrics
+* `fibonacci_timing_series.csv`: Output metrics for series
 * `plot_fibonacci_single.py`: Script for generating the stacked bar plot
-* `plots/fibonacci_gpu_vs_cpu_bar.png`: Visualization output
+* `plot_fibonacci_series.py`: Script for generating the series plot
+* `plots/fibonacci_gpu_vs_cpu_bar.png`: Visualization output for stacked bar plot
+* `plots/fibonacci_series_kernel_vs_cpu_total.png`: Visualization output for series
 * `README.md`: Documentation
 ---
