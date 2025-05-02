@@ -1,0 +1,2 @@
+N,Malloc_ms,H2D_ms,Kernel_ms,D2H_ms,Free_ms,TotalGPU_ms,CPU_ms
+16777216,59.3275,0.0000,215.7496,368.0875,39.9556,684.0927,325.1610
