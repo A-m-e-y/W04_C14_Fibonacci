@@ -49,6 +49,35 @@ All times measured using `cudaEvent_t` for GPU and `clock_gettime()` for CPU.
 
 ---
 
+### Explanation of each Metric
+
+* **H2D (Host-to-Device)**:
+  - This refers to copying data from the **CPU's memory (host)** to the **GPU's memory (device)** using `cudaMemcpy(..., cudaMemcpyHostToDevice)`.
+  - It's typically used when you need to send input data to the GPU before computation.
+
+* **D2H (Device-to-Host)**:
+  - This is the opposite — copying data **from the GPU back to the CPU** after the GPU finishes computation.
+  - It uses `cudaMemcpy(..., cudaMemcpyDeviceToHost)` and is often required to retrieve results from GPU memory.
+
+* **cudaMalloc (Device Memory Allocation)**:
+  - This function allocates memory on the GPU's global memory so that the device (GPU) can store and work with data.
+  - It's similar to `malloc()` in C, but it reserves space on the GPU, not the CPU.
+
+* **cudaFree (Device Memory Deallocation)**:
+  - This releases the memory previously allocated on the GPU using `cudaMalloc`.
+  - If you forget to call `cudaFree`, you risk a memory leak on the GPU.
+
+* **Kernel Execution**:
+  - This is the actual computation time spent in the GPU kernel function.
+  - It represents the time taken to execute the code that runs on the GPU.
+
+### Why H2D is Zero in Fibonacci?
+
+- In the Fibonacci CUDA implementation, **no input data is copied to the GPU** — the GPU thread computes the entire sequence internally.
+- Therefore, **no Host-to-Device (H2D) transfer occurs**, and its time is logged as **0 ms**.
+
+---
+
 ## 🔬 Observations
 
 ### ✅ GPU Kernel is Fast
